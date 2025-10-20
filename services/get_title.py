@@ -2,8 +2,10 @@ from llama_index.core import PromptTemplate
 from llm_factory.get_llm import get_ollama_llm
 
 def get_chat_title(model, user_query):
+    # Get the Ollama model instance
     llm = get_ollama_llm(model)
 
+    # Create prompt template for generating a short title
     title_prompt_template = PromptTemplate(
         template=(
             "You are a helpful assistant that generates short, clear, and catchy titles.\n\n"
@@ -18,10 +20,18 @@ def get_chat_title(model, user_query):
         )
     )
 
-    # Correct formatting
+    # Format the template safely
     title_prompt = title_prompt_template.format(user_query=user_query)
 
-    # Get the LLM response
-    title = llm.complete(prompt=title_prompt).text.strip()
+    try:
+        # Generate completion from LLM
+        response = llm.complete(prompt=title_prompt)
+        title = response.text.strip() if hasattr(response, "text") else str(response).strip()
 
-    return title
+        # Return a fallback title if LLM gives empty output
+        return title if title else "New Chat"
+
+    except Exception as e:
+        # Graceful fallback on any failure
+        print(f"Error generating title: {e}")
+        return "New Chat"
