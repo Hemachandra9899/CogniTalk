@@ -55,6 +55,7 @@ def get_conversation(conv_id: str) -> Optional[Dict[str, Any]]:
     return doc
 
 
-def get_all_conversations() -> Dict[str, str]:
+def get_all_conversations() -> list[dict]:
     cursor = conversations.find({}, {"title": 1}).sort("last_interacted", DESCENDING)
-    return {doc["_id"]: doc["title"] for doc in cursor}
+    return [{"id": doc["_id"], "title": doc.get("title", "Untitled Chat")} for doc in cursor]
+

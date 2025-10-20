@@ -3,7 +3,6 @@ from services.get_models_list import get_ollama_models_list
 from services.get_title import get_chat_title
 from services.chat_utilities import get_answer
 from db.conversations import (
-    create_new_conversation_id,
     create_new_conversation,
     get_conversation,
     get_all_conversations,
@@ -40,7 +39,7 @@ st.session_state.setdefault("conversation_history", [])
 with st.sidebar:
     st.header("💭 Chat History")
 
-    conversations = get_all_conversations()
+    conversations = get_all_conversations()  # Should return list of dicts [{'id':..., 'title':...}]
 
     # Start a new chat
     if st.button("+ New Chat"):
@@ -49,7 +48,9 @@ with st.sidebar:
         st.session_state.conversation_history = []
 
     # Show previous chats
-    for cid, title in conversations.items():
+    for conv in conversations:
+        cid = conv["id"]
+        title = conv["title"]
         is_current = cid == st.session_state.conversation_id
         label = f"**{title}**" if is_current else title
 
@@ -90,12 +91,10 @@ if user_query:
         except Exception:
             title = "New Chat"
 
-        conv_id = create_new_conversation_id()
+        # Create new conversation and save title
+        conv_id = create_new_conversation(title)
         st.session_state.conversation_id = conv_id
         st.session_state.conversation_title = title
-
-        # Save conversation metadata
-        create_new_conversation(conv_id, title)
     else:
         # Add user message to existing conversation
         add_message(st.session_state.conversation_id, "user", user_query)
